@@ -4,12 +4,19 @@ import numpy as np
 import joblib
 import plotly.graph_objects as go
 import plotly.express as px
-
+import os
 # File paths
-BASE_PATH = r"C:\Users\dinne\Diabetic-Readmissions-"
-MODEL_PATH = BASE_PATH + r"\Model\diabetic_readmission_model.joblib"
-FEATURE_INFO_PATH = BASE_PATH + r"\Model\feature_info.joblib"
+#BASE_PATH = r"C:\Users\dinne\Diabetic-Readmissions-"
+#MODEL_PATH = BASE_PATH + r"\Model\diabetic_readmission_model.joblib"
+#FEATURE_INFO_PATH = BASE_PATH + r"\Model\feature_info.joblib"
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "diabetic_readmission_model.joblib")
+feature_info_path = os.path.join(BASE_DIR, "feature_info.joblib")
+ 
+model = joblib.load(model_path)
+feature_info = joblib.load(feature_info_path)
+ 
 # Page config
 st.set_page_config(page_title="30-Day Diabetes Readmission Predictor", layout="wide")
 st.title("🏥 30-Day Diabetes Readmission Risk Predictor")
@@ -377,4 +384,5 @@ def main():
         about_page()
 
 if __name__ == "__main__":
+
     main()
