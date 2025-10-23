@@ -6,3 +6,4 @@ xgboost
 plotly
 matplotlib
 seaborn
+joblib
