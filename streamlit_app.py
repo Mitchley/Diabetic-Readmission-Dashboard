@@ -119,7 +119,7 @@ def create_input_data(user_inputs, model_features):
             input_data[feature] = 1
    
     return input_data
- 
+ #Prediction function
 def prediction_page(predictor):
     st.header("Patient Risk Assessment")
    
@@ -251,11 +251,11 @@ def main():
     
     # Update the calls to the page functions
     if page == "30-Day Prediction":
-        prediction_page(p)  # This one takes an argument
+        prediction_page(p) 
     elif page == "Risk Analysis":
-        insights_page()  # No argument needed
+        insights_page()  
     elif page == "About":
-        about_page()  # No argument needed
+        about_page()  
 
 if __name__ == "__main__":
     main()
