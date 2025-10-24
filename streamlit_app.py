@@ -59,60 +59,125 @@ class Predictor:
             'num_procedures': 2, 'race_Caucasian': 1, 'gender_Female': 1
         }
 
-def create_input_data(u, f):
-    d = {k: 0 for k in f}
-    num = ['age', 'time_in_hospital', 'num_medications', 'num_lab_procedures', 'number_diagnoses',
-           'number_emergency', 'number_inpatient', 'num_procedures']
-    for k in num:
-        d[k] = u[k] if k in f else 0
-    for k in ['diabetesMed', 'insulin', 'change']:
-        d[k] = 1 if u[k] == "Yes" else 0
-    cats = [f"race_{u['race']}", f"gender_{u['gender']}", f"A1Cresult_{u['a1c_result']}", f"max_glu_serum_{u['max_glu_serum']}"]
-    for c in cats:
-        d[c] = 1 if c in f else 0
-    for med in ['metformin', 'glipizide', 'glyburide', 'pioglitazone', 'rosiglitazone']:
-        if f"{med}_{u[med]}" in f: d[f"{med}_{u[med]}"] = 1
-    for med in ['acarbose', 'nateglinide', 'chlorpropamide', 'glimepiride', 'acetohexamide', 'tolazamide', 'glipizide-metformin', 'glyburide-metformin']:
-        if f"{med}_No" in f: d[f"{med}_No"] = 1
-    return d
-
-def prediction_page(p):
+def create_input_data(user_inputs, model_features):
+    """Create input data dictionary from user inputs"""
+    input_data = {feature: 0 for feature in model_features}
+   
+    # Numerical features
+    numerical_map = {
+        'age': user_inputs['age'],
+        'time_in_hospital': user_inputs['time_in_hospital'],
+        'num_medications': user_inputs['num_medications'],
+        'num_lab_procedures': user_inputs['num_lab_procedures'],
+        'number_diagnoses': user_inputs['number_diagnoses'],
+        'number_emergency': user_inputs['number_emergency'],
+        'number_inpatient': user_inputs['number_inpatient'],
+        'num_procedures': user_inputs['num_procedures']
+    }
+   
+    for feature, value in numerical_map.items():
+        if feature in model_features:
+            input_data[feature] = value
+   
+    # Binary features
+    binary_map = {
+        'diabetesMed': 1 if user_inputs['diabetesMed'] == "Yes" else 0,
+        'insulin': 1 if user_inputs['insulin'] == "Yes" else 0,
+        'change': 1 if user_inputs['change'] == "Yes" else 0
+    }
+   
+    for feature, value in binary_map.items():
+        if feature in model_features:
+            input_data[feature] = value
+   
+    # Categorical features
+    categorical_map = {
+        f'race_{user_inputs["race"]}': 1,
+        f'gender_{user_inputs["gender"]}': 1,
+        f'A1Cresult_{user_inputs["a1c_result"]}': 1,
+        f'max_glu_serum_{user_inputs["max_glu_serum"]}': 1
+    }
+   
+    for feature, value in categorical_map.items():
+        if feature in model_features:
+            input_data[feature] = value
+   
+    # Medications
+    medications = ['metformin', 'glipizide', 'glyburide', 'pioglitazone', 'rosiglitazone']
+    for med in medications:
+        feature = f'{med}_{user_inputs[med]}'
+        if feature in model_features:
+            input_data[feature] = 1
+   
+    # Set common medications to "No"
+    common_meds = ['acarbose', 'nateglinide', 'chlorpropamide', 'glimepiride',
+                   'acetohexamide', 'tolazamide', 'glipizide-metformin', 'glyburide-metformin']
+   
+    for med in common_meds:
+        feature = f'{med}_No'
+        if feature in model_features:
+            input_data[feature] = 1
+   
+    return input_data
+ 
+def prediction_page(predictor):
     st.header("Patient Risk Assessment")
+   
     with st.form("patient_form"):
-        c1, c2, c3 = st.columns(3)
-        with c1:
+        col1, col2, col3 = st.columns(3)
+       
+        with col1:
+            st.subheader("Demographics")
             age = st.slider("Age", 0, 100, 50)
             race = st.selectbox("Race", ["Caucasian", "AfricanAmerican", "Asian", "Hispanic", "Other"])
             gender = st.selectbox("Gender", ["Female", "Male"])
-            time_in_hospital = st.slider("Hospital Stay (days)", 1, 30, 3)
-            num_lab_procedures = st.slider("Lab Procedures", 0, 100, 50)
-            num_procedures = st.slider("Procedures", 0, 10, 1)
-        with c2:
-            number_diagnoses = st.slider("Diagnoses", 1, 20, 5)
-            number_emergency = st.slider("ER Visits", 0, 20, 0)
-            number_inpatient = st.slider("Inpatient Stays", 0, 20, 0)
+           
+            st.subheader("Hospital Stay")
+            time_in_hospital = st.slider("Current Hospital Stay (days)", 1, 30, 3)
+            num_lab_procedures = st.slider("Lab Procedures This Stay", 0, 100, 50)
+            num_procedures = st.slider("Number of Procedures", 0, 10, 1)
+           
+        with col2:
+            st.subheader("Medical History")
+            number_diagnoses = st.slider("Number of Diagnoses", 1, 20, 5)
+            number_emergency = st.slider("ER Visits (past year)", 0, 20, 0)
+            number_inpatient = st.slider("Inpatient Stays (past year)", 0, 20, 0)
+           
+            st.subheader("Diabetes Management")
             diabetesMed = st.selectbox("On Diabetes Medication", ["No", "Yes"])
             insulin = st.selectbox("Insulin Use", ["No", "Yes"])
             change = st.selectbox("Medication Change", ["No", "Yes"])
-        with c3:
+           
+        with col3:
+            st.subheader("Lab Results")
             a1c_result = st.selectbox("A1C Result", ["Norm", ">7", ">8", "None"])
             max_glu_serum = st.selectbox("Max Glucose Serum", ["Norm", ">200", ">300", "None"])
+           
+            st.subheader("Medications")
             num_medications = st.slider("Number of Medications", 0, 50, 10)
-            meds = {m: st.selectbox(m.title(), ["No", "Steady", "Up", "Down"]) for m in
-                    ["metformin", "glipizide", "glyburide", "pioglitazone", "rosiglitazone"]}
-        if st.form_submit_button("Predict 30-Day Readmission Risk"):
-            u = {
-                'age': age, 'race': race, 'gender': gender, 'time_in_hospital': time_in_hospital,
-                'num_lab_procedures': num_lab_procedures, 'num_procedures': num_procedures,
-                'number_diagnoses': number_diagnoses, 'number_emergency': number_emergency,
-                'number_inpatient': number_inpatient, 'diabetesMed': diabetesMed, 'insulin': insulin,
-                'change': change, 'a1c_result': a1c_result, 'max_glu_serum': max_glu_serum,
-                'num_medications': num_medications, **meds
-            }
-            data = create_input_data(u, p.features)
-            pred, prob = p.predict(data)
-            fi = p.get_feature_importance(data)
-            show_results(pred, prob, fi)
+            metformin = st.selectbox("Metformin", ["No", "Steady", "Up", "Down"])
+            glipizide = st.selectbox("Glipizide", ["No", "Steady", "Up", "Down"])
+            glyburide = st.selectbox("Glyburide", ["No", "Steady", "Up", "Down"])
+            pioglitazone = st.selectbox("Pioglitazone", ["No", "Steady", "Up", "Down"])
+            rosiglitazone = st.selectbox("Rosiglitazone", ["No", "Steady", "Up", "Down"])
+       
+        submitted = st.form_submit_button("Predict 30-Day Readmission Risk")
+   
+    if submitted:
+        user_inputs = {
+            'age': age, 'time_in_hospital': time_in_hospital, 'num_medications': num_medications,
+            'num_lab_procedures': num_lab_procedures, 'number_diagnoses': number_diagnoses,
+            'number_emergency': number_emergency, 'number_inpatient': number_inpatient,
+            'diabetesMed': diabetesMed, 'insulin': insulin, 'change': change,
+            'race': race, 'gender': gender, 'a1c_result': a1c_result, 'max_glu_serum': max_glu_serum,
+            'metformin': metformin, 'glipizide': glipizide, 'glyburide': glyburide,
+            'pioglitazone': pioglitazone, 'rosiglitazone': rosiglitazone, 'num_procedures': num_procedures
+        }
+       
+        input_data = create_input_data(user_inputs, predictor.features)
+        prediction, probability = predictor.predict(input_data)
+        feature_importance = predictor.get_feature_importance(input_data)
+        show_results(prediction, probability, feature_importance)
 
 def show_results(pred, prob, fi):
     risk = prob[1]
