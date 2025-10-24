@@ -67,8 +67,8 @@ def prediction_page(p):
             num_procedures=st.slider("Procedures",0,10,1)
         with c2:
             number_diagnoses=st.slider("Diagnoses",1,20,5)
-            number_emergency=st.slider("ER Visits (year)",0,20,0)
-            number_inpatient=st.slider("Inpatient Stays (year)",0,20,0)
+            number_emergency=st.slider("ER Visits",0,20,0)
+            number_inpatient=st.slider("Inpatient Stays",0,20,0)
             diabetesMed=st.selectbox("On Diabetes Medication",["No","Yes"])
             insulin=st.selectbox("Insulin Use",["No","Yes"])
             change=st.selectbox("Medication Change",["No","Yes"])
