@@ -159,12 +159,22 @@ def insights_page():
 
 def about_page():
     st.header("About")
-    st.markdown("""**Purpose**: Predicts likelihood of diabetic readmission within 30 days.
+    st.write("""
+    ## 30-Day Diabetes Readmission Risk Predictor
+   
+    **Clinical Purpose**: Predicts likelihood of diabetic patients being readmitted within 30 days of discharge.
+   
+    **Key Features**:
     - Individual risk scoring
     - Feature contribution analysis  
-    - Personalized prevention plans  
-    ⚠️ *Supports decisions, not a medical substitute.*""")
-
+    - Personalized prevention plans
+   
+    **Performance**:
+    - AUC-ROC: 0.68
+    - Recall: 0.63
+   
+    ⚠️ **Important**: This tool supports clinical decision-making but does not replace professional medical judgment.
+    """)
 def main():
     p = Predictor()
     with st.spinner("Loading model..."):
