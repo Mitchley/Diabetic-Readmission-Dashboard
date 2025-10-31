@@ -140,8 +140,8 @@ def prediction_page(predictor):
         with col2:
             st.subheader("Medical History")
             number_diagnoses = st.slider("Number of Diagnoses", 1, 20, 5)
-            number_emergency = st.slider("ER Visits (past year)", 0, 20, 0)
-            number_inpatient = st.slider("Inpatient Stays (past year)", 0, 20, 0)
+            number_emergency = st.slider("ER Visits ", 0, 20, 0)
+            number_inpatient = st.slider("Inpatient Stays ", 0, 20, 0)
            
             st.subheader("Diabetes Management")
             diabetesMed = st.selectbox("On Diabetes Medication", ["No", "Yes"])
